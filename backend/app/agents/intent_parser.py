@@ -30,9 +30,10 @@ def parse_intent(message: str, history: list, role: str) -> dict:
     - If the message starts with 'ACTION:', the message IS the intent. (e.g. 'ACTION:leave.request' means plan is ["leave.request"])
     
     Friendly Instructions:
-    - If the user greets you ('hi', 'hello', 'hey'), set plan to ["unknown"], confidence to 1.0, and clarification_needed to true.
-    - In the 'reasoning' field, provide a very warm welcome and ask specifically how you can help with HR tasks like leave, payroll, or onboarding.
-    - KEEP IT PERSONAL. Use phrases like "I'd be happy to help you today!"
+    - If the user greets you or asks a general HR question, set plan to ["unknown"], confidence to 1.0, and clarification_needed to true.
+    - IMPORTANT: The 'reasoning' field IS the actual answer the user sees in the chat bubble.
+    - If the user asks a question, PROVIDE THE FULL ANSWER in the 'reasoning' field.
+    - Be warm, professional, and helpful. Use phrases like "I'd be happy to explain that for you!"
 
     Smart Extraction:
     - If user says 'tomorrow' relative to {current_date}, calculate the exact date.
@@ -108,9 +109,9 @@ def parse_intent(message: str, history: list, role: str) -> dict:
              return {
                  "plan": ["ticket.manage"], 
                  "confidence": 0.9, 
-                 "clarification_needed": False, 
+                 "clarification_needed": False, # NO FORM POPUP
                  "extracted_entities": {"category": "Leave", "action": "create"}, 
-                 "reasoning": "I'd be happy to help with your leave appeal! I've prepared a request that will be sent to your manager for approval."
+                 "reasoning": "I'd be happy to help with your leave appeal! I've prepared a 'Pending' ticket for you right now. Could you please tell me a bit more about the reason or the specific dates?"
              }
         
         return {

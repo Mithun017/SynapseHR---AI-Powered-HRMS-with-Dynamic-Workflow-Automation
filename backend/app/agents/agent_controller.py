@@ -1,4 +1,4 @@
-from app.agents.memory import get_session, append_history
+from app.agents.memory import get_session, append_history, reset_session
 from app.agents.intent_parser import parse_intent
 from app.agents.planner import create_plan
 from app.rbac.permissions import can_invoke, can_manage_user
@@ -29,6 +29,12 @@ SKILL_REGISTRY = {
 
 def handle_chat(session_id: str, user_id: int, user_role: str, message: str) -> dict:
     session = get_session(session_id)
+    if session.get("user_id") and session["user_id"] != user_id:
+        print(f"RBAC: Identity Switched in session {session_id}. Resetting history.")
+        reset_session(session_id)
+        session = get_session(session_id) # Fresh session
+        
+    session["user_id"] = user_id
     append_history(session_id, {"role": "user", "content": message})
     
     # 0. FETCH AUTHORITATIVE ROLE FROM DB

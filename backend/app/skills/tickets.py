@@ -77,6 +77,8 @@ class TicketSkill(BaseSkill):
             
             results = query.order_by(desc(Ticket.created_at)).all()
             
+            is_manager = user_role in ["manager", "admin"]
+            
             final_cards = []
             for t, employee_name in results:
                 final_cards.append(generate_ui(
@@ -89,7 +91,8 @@ class TicketSkill(BaseSkill):
                         "status": t.status,
                         "title": t.title,
                         "description": t.description,
-                        "manager_notes": t.manager_notes
+                        "manager_notes": t.manager_notes,
+                        "can_approve": is_manager # Authoritative UI Guard
                     }
                 ))
 

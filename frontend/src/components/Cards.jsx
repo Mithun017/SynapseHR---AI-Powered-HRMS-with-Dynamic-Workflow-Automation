@@ -172,7 +172,7 @@ export const TableCard = ({ title, data, onAction }) => (
 );
 
 export const TicketCard = ({ title, data, onAction }) => {
-    const isManager = onAction && data.id; // Basic check if we can take actions
+    const isManager = onAction && data.can_approve; // Authoritative Backend Guard
     const statusColor = {
         "Approved": "#10b981",
         "Denied": "#ef4444",

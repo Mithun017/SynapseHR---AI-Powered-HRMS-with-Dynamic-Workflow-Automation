@@ -15,3 +15,7 @@ def update_session(session_id: str, key: str, value: Any):
 def append_history(session_id: str, message: dict):
     session = get_session(session_id)
     session["history"].append(message)
+
+def reset_session(session_id: str):
+    if session_id in _session_storage:
+        _session_storage[session_id] = {"history": [], "context": {}, "user_id": None}

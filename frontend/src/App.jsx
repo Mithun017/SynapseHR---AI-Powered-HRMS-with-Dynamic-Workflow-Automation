@@ -43,7 +43,7 @@ function App() {
           message: actionCommand,
           user_id: overrideId || userId,
           role: overrideRole || role,
-          session_id: "test-session"
+          session_id: `session-user-${overrideId || userId}`
         })
       });
       const data = await response.json();
