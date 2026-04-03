@@ -51,6 +51,15 @@ class AuditLog(Base):
     result = Column(String)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    role = Column(String)  # user, assistant
+    content = Column(String)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    user = relationship("User")
+
 class OnboardingTask(Base):
     __tablename__ = "onboarding_tasks"
     id = Column(Integer, primary_key=True, index=True)

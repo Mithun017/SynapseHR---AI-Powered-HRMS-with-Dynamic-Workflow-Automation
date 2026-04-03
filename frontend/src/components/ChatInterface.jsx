@@ -10,11 +10,6 @@ const ChatInterface = ({ role, userId, onNewCard }) => {
   const scrollRef = useRef(null);
 
   useEffect(() => {
-    // Clear chat history when user changes to prevent cross-account history leakage
-    setMessages([]);
-  }, [userId]);
-
-  useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
@@ -37,7 +32,7 @@ const ChatInterface = ({ role, userId, onNewCard }) => {
           message: userMsg.content,
           user_id: userId,
           role: role,
-          session_id: `session-${userId}`
+          session_id: "test-session"
         })
       });
       

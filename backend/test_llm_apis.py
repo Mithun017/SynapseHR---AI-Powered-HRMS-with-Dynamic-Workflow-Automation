@@ -10,10 +10,7 @@ load_dotenv()
 
 def test_groq():
     print("\n--- Testing Groq API ---")
-    api_key = os.getenv("GROQ_API_KEY")
-    if not api_key:
-        print("GROQ_API_KEY not found in environment variables.")
-        return
+    api_key = os.getenv("GROQ_API_KEY", "YOUR_GROQ_API_KEY_HERE")
     model_name = "llama-3.3-70b-versatile"
     
     try:
@@ -35,10 +32,7 @@ def test_groq():
 def test_gemini():
     print("\n--- Testing Gemini API ---")
     # Using the key found in the notebook as a fallback
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        print("GEMINI_API_KEY not found in environment variables.")
-        return
+    api_key = os.getenv("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY_HERE")
     model_name = "gemini-flash-latest"
     
     try:

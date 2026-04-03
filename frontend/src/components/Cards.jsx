@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Calendar, DollarSign, UserCheck, AlertCircle, FileText, MoreHorizontal, CheckCircle2 } from 'lucide-react';
 
 const CardWrapper = ({ title, status, children }) => (
@@ -111,7 +112,9 @@ export const ErrorCard = ({ title, data }) => (
         <AlertCircle color="var(--danger)" />
         <span style={{ fontWeight: '700', color: 'var(--danger)' }}>{title}</span>
     </div>
-    <p style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>{data.message}</p>
+    <p style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>
+        {data?.message || "An unexpected error occurred. Please try again."}
+    </p>
   </div>
 );
 

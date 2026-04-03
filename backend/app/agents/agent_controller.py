@@ -1,7 +1,7 @@
 from app.agents.memory import get_session, append_history
 from app.agents.intent_parser import parse_intent
 from app.agents.planner import create_plan
-from app.rbac.permissions import can_invoke
+from app.rbac.permissions import can_invoke, can_manage_user
 from app.core.exceptions import RBACException
 from app.services.ui_generator import generate_ui, UIType
 
@@ -12,6 +12,9 @@ from app.skills.onboarding import OnboardingInitiateSkill
 from app.skills.admin import AdminSkill
 from app.skills.analytics import AnalyticsSkill
 from app.skills.reports import ReportsSkill
+from app.skills.conversation import ConversationSkill
+from app.db.models import User, ChatMessage
+from app.db.session import SessionLocal
 
 SKILL_REGISTRY = {
     "ticket.manage": TicketSkill(),
@@ -20,12 +23,24 @@ SKILL_REGISTRY = {
     "employee.add": AdminSkill(),
     "employee.list": AdminSkill(),
     "analytics.stats": AnalyticsSkill(),
-    "reports.generate": ReportsSkill()
+    "reports.generate": ReportsSkill(),
+    "conversation.review": ConversationSkill()
 }
 
 def handle_chat(session_id: str, user_id: int, user_role: str, message: str) -> dict:
     session = get_session(session_id)
     append_history(session_id, {"role": "user", "content": message})
+    
+    # 0. Persist User Message to DB
+    db = SessionLocal()
+    try:
+        user_msg = ChatMessage(user_id=user_id, role="user", content=message)
+        db.add(user_msg)
+        db.commit()
+    except Exception as e:
+        print(f"Error saving user message: {e}")
+    finally:
+        db.close()
     
     # 1. Parse intent & Multi-step Plan
     try:
@@ -92,10 +107,22 @@ def handle_chat(session_id: str, user_id: int, user_role: str, message: str) -> 
     if not ui_to_return:
         ui_to_return = generate_ui(UIType.TEXT, "SynapseHR Assistant", {"text": "I've processed your request, but there's no specific visual feedback for this action."})
 
+    # 4. Persist Assistant Message to DB
+    assistant_content = parsed.get("reasoning", "Processed successfully.")
+    db = SessionLocal()
+    try:
+        asst_msg = ChatMessage(user_id=user_id, role="assistant", content=assistant_content)
+        db.add(asst_msg)
+        db.commit()
+    except Exception as e:
+        print(f"Error saving assistant message: {e}")
+    finally:
+        db.close()
+
     return {
         "intent": ", ".join(plan),
         "confidence": parsed.get("confidence", 0.0),
-        "reasoning": parsed.get("reasoning", "Processed successfully."),
+        "reasoning": assistant_content,
         "clarification_needed": False,
         "actions": execution_actions,
         "ui": ui_to_return,

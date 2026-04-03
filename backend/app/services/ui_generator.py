@@ -14,7 +14,7 @@ class UIType(str, Enum):
 
 def generate_ui(ui_type: UIType, title: str, data: dict, actions: list = None):
     return {
-        "ui_type": ui_type.value,
+        "type": ui_type.value,
         "title": title,
         "data": data,
         "actions": actions or []

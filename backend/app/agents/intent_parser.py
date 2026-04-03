@@ -16,9 +16,10 @@ def parse_intent(message: str, history: list, role: str) -> dict:
     User Role: {role}
     
     Extracted Intents (one or more): 
-    - ticket.manage, payroll.query, onboarding.initiate, employee.add, employee.list, analytics.stats, reports.generate, system.dashboard, unknown
+    - ticket.manage, payroll.query, onboarding.initiate, employee.add, employee.list, analytics.stats, reports.generate, conversation.review, system.dashboard, unknown
     
     Special Logic:
+    - If user says 'show employee chats', 'review conversations', 'see history for [name]', the intent is 'conversation.review'.
     - If user says 'make dashboard', 'build dashboard', 'show my workspace', the intent is 'system.dashboard'.
     - Based on User Role ({role}), the plan for 'system.dashboard' MUST be:
         - ADMIN: ["employee.list", "analytics.stats", "reports.generate"]

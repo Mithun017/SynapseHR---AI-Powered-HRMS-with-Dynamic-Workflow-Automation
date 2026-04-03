@@ -11,12 +11,14 @@ class ChatRequest(BaseModel):
     role: str
     session_id: str = None
 
+from typing import Any, Optional, Union
+
 class ChatResponse(BaseModel):
     intent: str
     confidence: float
     reasoning: str
     clarification_needed: bool
-    ui: dict = None
+    ui: Any = None
 
 import traceback
 

@@ -26,7 +26,6 @@ function App() {
   const [cards, setCards] = useState([]);
 
   const handleLogin = (user) => {
-    setCards([]); // Clear previous cards
     setUserId(user.id);
     setRole(user.role);
     setIsLoggedIn(true);
@@ -43,7 +42,7 @@ function App() {
           message: actionCommand,
           user_id: overrideId || userId,
           role: overrideRole || role,
-          session_id: `session-${overrideId || userId}`
+          session_id: "test-session"
         })
       });
       const data = await response.json();
