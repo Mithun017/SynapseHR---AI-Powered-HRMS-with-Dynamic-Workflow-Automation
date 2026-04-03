@@ -1,0 +1,32 @@
+from app.rbac.roles import Role, ROLE_HIERARCHY
+from app.core.exceptions import RBACException
+
+def can_invoke(user_role: str, skill_name: str) -> bool:
+    """Check if a role can invoke a specific skill."""
+    permissions = {
+        "ticket.manage": [Role.EMPLOYEE, Role.MANAGER, Role.HR_OPS, Role.ADMIN],
+        "payroll.query": [Role.EMPLOYEE, Role.MANAGER, Role.HR_OPS, Role.ADMIN],
+        "onboarding.initiate": [Role.HR_OPS, Role.ADMIN],
+        "analytics.stats": [Role.MANAGER, Role.HR_OPS, Role.ADMIN],
+        "employee.list": [Role.EMPLOYEE, Role.MANAGER, Role.HR_OPS, Role.ADMIN],
+        "employee.add": [Role.HR_OPS, Role.ADMIN],
+        "reports.generate": [Role.MANAGER, Role.HR_OPS, Role.ADMIN],
+    }
+    
+    allowed_roles = permissions.get(skill_name, [])
+    if user_role not in allowed_roles:
+        raise RBACException(f"Role '{user_role}' cannot execute skill '{skill_name}'")
+    return True
+
+def can_access_employee(user_role: str, user_id: int, target_user_id: int) -> bool:
+    """Data-scope permission check."""
+    if user_role in [Role.HR_OPS, Role.ADMIN]:
+        return True
+    if user_id == target_user_id:
+        return True
+    
+    if user_role == Role.MANAGER:
+        # Simplification: A manager can access everyone else. In prod: check department tree.
+        return True
+    
+    raise RBACException(f"User {user_id} cannot access data for user {target_user_id}")
