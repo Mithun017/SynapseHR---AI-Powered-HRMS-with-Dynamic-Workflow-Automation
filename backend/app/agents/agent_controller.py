@@ -31,14 +31,20 @@ def handle_chat(session_id: str, user_id: int, user_role: str, message: str) -> 
     session = get_session(session_id)
     append_history(session_id, {"role": "user", "content": message})
     
-    # 0. Persist User Message to DB
+    # 0. FETCH AUTHORITATIVE ROLE FROM DB
     db = SessionLocal()
     try:
+        user_record = db.query(User).filter(User.id == user_id).first()
+        if user_record:
+            user_role = user_record.role.lower() # Authoritative Override
+            print(f"RBAC: Overriding session role with DB role: {user_role} for user {user_id}")
+            
+        # Log User Message
         user_msg = ChatMessage(user_id=user_id, role="user", content=message)
         db.add(user_msg)
         db.commit()
     except Exception as e:
-        print(f"Error saving user message: {e}")
+        print(f"RBAC/DB Error: {e}")
     finally:
         db.close()
     
