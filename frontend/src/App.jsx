@@ -88,11 +88,12 @@ function App() {
       
       <Sidebar onAction={handleAction} />
       
-      <Dashboard role={role} onAction={handleAction}>
+      <Dashboard key={userId} role={role} onAction={handleAction}>
         {cards}
       </Dashboard>
-
+      
       <ChatInterface 
+        key={userId}
         role={role} 
         userId={userId} 
         onNewCard={addCard} 
