@@ -104,8 +104,14 @@ def parse_intent(message: str, history: list, role: str) -> dict:
              if role == "manager": dash_plan = ["ticket.manage", "analytics.stats"]
              return {"plan": dash_plan, "confidence": 1.0, "clarification_needed": False, "extracted_entities": {}, "reasoning": "Loading your personalized workspace..."}
         
-        if "leave" in msg_low:
-             return {"plan": ["leave.request"], "confidence": 0.8, "clarification_needed": True, "extracted_entities": {}, "reasoning": "I'd be happy to help with your leave request! Could you please tell me which date you're planning for and the reason?"}
+        if "leave" in msg_low or "sick" in msg_low or "vacation" in msg_low:
+             return {
+                 "plan": ["ticket.manage"], 
+                 "confidence": 0.9, 
+                 "clarification_needed": False, 
+                 "extracted_entities": {"category": "Leave", "action": "create"}, 
+                 "reasoning": "I'd be happy to help with your leave appeal! I've prepared a request that will be sent to your manager for approval."
+             }
         
         return {
             "plan": ["unknown"],

@@ -18,7 +18,7 @@ class TicketSkill(BaseSkill):
             if action == "create" or inputs.get("description"):
                 category = inputs.get("category", "General")
                 title = inputs.get("title", f"New {category} Request")
-                desc_text = inputs.get("description", "No description provided.")
+                desc_text = inputs.get("description", f"Appeal for {category}")
                 
                 new_ticket = Ticket(
                     user_id=user_id, 
@@ -29,10 +29,18 @@ class TicketSkill(BaseSkill):
                 )
                 db.add(new_ticket)
                 db.commit()
+                db.refresh(new_ticket)
+                
                 return generate_ui(
-                    UIType.TEXT, 
-                    "Ticket Raised 🎫", 
-                    {"text": f"Your ticket for '{title}' has been submitted and is currently 'Pending'."}
+                    UIType.TICKET_CARD, 
+                    "Request Submitted 🎫", 
+                    {
+                        "id": new_ticket.id,
+                        "category": new_ticket.category,
+                        "status": new_ticket.status,
+                        "title": new_ticket.title,
+                        "description": new_ticket.description
+                    }
                 )
 
             # 2. UPDATE TICKET (Manager/Admin Only)
@@ -48,7 +56,19 @@ class TicketSkill(BaseSkill):
                     if inputs.get("notes"):
                         ticket.manager_notes = inputs.get("notes")
                     db.commit()
-                    return generate_ui(UIType.TEXT, "Ticket Updated", {"text": f"Ticket #{ticket_id} status changed to {new_status}."})
+                    db.refresh(ticket)
+                    return generate_ui(
+                        UIType.TICKET_CARD, 
+                        "Status Updated ✅", 
+                        {
+                            "id": ticket.id,
+                            "category": ticket.category,
+                            "status": ticket.status,
+                            "title": ticket.title,
+                            "description": ticket.description,
+                            "manager_notes": ticket.manager_notes
+                        }
+                    )
 
             # 3. LIST TICKETS
             query = db.query(Ticket, User.name).join(User, Ticket.user_id == User.id)
@@ -57,28 +77,23 @@ class TicketSkill(BaseSkill):
             
             results = query.order_by(desc(Ticket.created_at)).all()
             
-            rows = []
+            final_cards = []
             for t, employee_name in results:
-                rows.append({
-                    "ID": t.id,
-                    "Employee": employee_name,
-                    "Category": t.category,
-                    "Title": t.title,
-                    "Status": t.status,
-                    "Created": t.created_at.strftime("%Y-%m-%d"),
-                    "employee_name": employee_name,
-                    "description": t.description,
-                    "status": t.status,
-                    "manager_notes": t.manager_notes
-                })
+                final_cards.append(generate_ui(
+                    UIType.TICKET_CARD,
+                    f"Ticket #{t.id}", 
+                    {
+                        "id": t.id,
+                        "employee_name": employee_name,
+                        "category": t.category,
+                        "status": t.status,
+                        "title": t.title,
+                        "description": t.description,
+                        "manager_notes": t.manager_notes
+                    }
+                ))
 
-            return generate_ui(
-                UIType.TICKET_CARD, # Use multi-card or specific ticket type
-                "Ticket Management", 
-                {
-                    "columns": ["ID", "Employee", "Category", "Title", "Status", "Created"],
-                    "rows": rows
-                }
-            )
+            # Return list of cards (App.jsx will handle it)
+            return final_cards if final_cards else generate_ui(UIType.TEXT, "No Tickets", {"text": "You don't have any active tickets at this time."})
         finally:
             db.close()
