@@ -34,6 +34,7 @@ function App() {
 
   const handleAction = async (actionCommand, overrideId, overrideRole) => {
     try {
+      const isDashboard = actionCommand.toLowerCase().includes("workspace") || actionCommand.toLowerCase().includes("dashboard");
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       const response = await fetch(`${apiUrl}/api/agent/chat`, {
         method: 'POST',
@@ -46,17 +47,24 @@ function App() {
         })
       });
       const data = await response.json();
-      if (data.ui) addCard(data.ui);
+      if (data.ui) {
+          if (isDashboard) setCards([]); // Clear dashboard on fresh load
+          addCard(data.ui);
+      }
     } catch (error) {
       console.error("Action failed", error);
     }
   };
 
   const addCard = (uiDescriptor) => {
+    if (Array.isArray(uiDescriptor)) {
+        uiDescriptor.forEach(u => addCard(u));
+        return;
+    }
     const Component = cardMap[uiDescriptor.type] || ErrorCard;
     const newCard = (
       <Component 
-        key={Date.now() + Math.random()} 
+        key={uiDescriptor.id || (Date.now() + Math.random())} 
         title={uiDescriptor.title} 
         data={uiDescriptor.data} 
         onAction={handleAction}

@@ -98,6 +98,12 @@ def parse_intent(message: str, history: list, role: str) -> dict:
         print(f"LLM parsing failed: {e}. Raw response: {raw_response if 'raw_response' in locals() else 'None'}")
         # SIMPLE FALLBACK HEURISTIC
         msg_low = message.lower()
+        if "workspace" in msg_low or "dashboard" in msg_low:
+             dash_plan = ["ticket.manage", "payroll.query"]
+             if role == "admin": dash_plan = ["employee.list", "analytics.stats", "reports.generate"]
+             if role == "manager": dash_plan = ["ticket.manage", "analytics.stats"]
+             return {"plan": dash_plan, "confidence": 1.0, "clarification_needed": False, "extracted_entities": {}, "reasoning": "Loading your personalized workspace..."}
+        
         if "leave" in msg_low:
              return {"plan": ["leave.request"], "confidence": 0.8, "clarification_needed": True, "extracted_entities": {}, "reasoning": "I'd be happy to help with your leave request! Could you please tell me which date you're planning for and the reason?"}
         

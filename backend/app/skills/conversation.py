@@ -23,15 +23,15 @@ class ConversationSkill(BaseSkill):
             # ROLE-BASED VISIBILITY LOGIC
             # 1. Employees can ONLY see their own.
             if user_role == Role.EMPLOYEE and user_id != target_user_id:
-                return generate_ui(UIType.ERROR_CARD, "Permission Denied", {"message": "You can only view your own conversation history."})
+                return generate_ui(UIType.ERROR_CARD, "Privacy Violation", {"message": f"Employees are strictly prohibited from viewing {target_user.role} conversations."})
             
-            # 2. Managers/Admins can see Employees.
-            # 3. But Managers/Admins CANNOT see other Managers/Admins (Hierarchy check).
+            # 2. Hierarchy Check: Managers/Admins can see Employees.
+            # 3. Privacy Check: Managers/Admins CANNOT see each other.
             is_leadership = user_role in [Role.MANAGER, Role.HR_OPS, Role.ADMIN]
             target_is_leadership = target_user.role in [Role.MANAGER, Role.HR_OPS, Role.ADMIN]
 
             if is_leadership and target_is_leadership and user_id != target_user_id:
-                 return generate_ui(UIType.ERROR_CARD, "Permission Denied", {"message": f"You do not have permission to view {target_user.role} conversations."})
+                 return generate_ui(UIType.ERROR_CARD, "Leadership Privacy", {"message": f"Managers and Admins cannot monitor each other's conversations. Oversight is limited to Employee-level history."})
 
             # Fetch messages
             messages = db.query(ChatMessage).filter(ChatMessage.user_id == target_user_id).order_by(desc(ChatMessage.timestamp)).limit(20).all()
